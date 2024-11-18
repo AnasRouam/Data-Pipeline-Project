@@ -9,3 +9,5 @@ I'll try to create a data pipeline for an imaginary company.
 5. Train a predictive model (e.g., regression or classification) on the data using Python.
 6. Automate the pipeline (e.g., using cron jobs, Airflow, or Python scripts).
 7. Deploy the model and use Power BI to update dashboards with new predictions.
+
+Added this line to try 
