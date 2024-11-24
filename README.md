@@ -98,7 +98,7 @@ For **Sales Person**: Name, Marital Status, Gender, Hire Date
 ​
 
 **Schema of the normalized tables we will be using**
-![Schema of the normalized tables we will be using](AW Original Normalized Schema.png)
+![Schema of the normalized tables we will be using](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/AW%20Original%20Normalized%20Schema.png)
 
 
 
