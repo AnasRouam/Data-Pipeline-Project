@@ -96,7 +96,10 @@ For **Sales Person**: Name, Marital Status, Gender, Hire Date
 - Stored separately and adds memory overhead.
 - Best for queries with range conditions (BETWEEN, <, >) and for supporting joins and some sorting operations (ORDER BY).
 ​
- 
+
+**Schema of the normalized tables we will be using**
+![Schema of the normalized tables we will be using](AW Original Normalized Schema.png)
+
 
 
 ## 1.2 Building the star database
