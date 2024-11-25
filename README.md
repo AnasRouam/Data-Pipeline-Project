@@ -103,3 +103,6 @@ For **Sales Person**: Name, Marital Status, Gender, Hire Date
 
 
 ## 1.2 Building the star database
+The scripts to create the tables, keys and indexes are included in the repo. We obtain this schema:
+
+![Our target star schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/StarSchema.png)
