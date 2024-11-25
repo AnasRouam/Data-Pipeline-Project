@@ -1,5 +1,11 @@
 # Data-Pipeline-Project
-I'll try to create a data pipeline for an imaginary company.
+I'll try to create a data pipeline for the imaginary company: AdventureWorks.
+
+**Tools Used**
+- MS SQL Server 2022
+- MS SQL Server Management Studio (SSMS)
+- MS Visual Studio Community 2019 (with Data Tools extension installed)
+- MS SQL Server Integration Services (SSIS)
 
 **Full Pipeline Example:**
 1. Extract data from multiple sources (CSV, APIs, web scraping, etc.).
@@ -106,3 +112,16 @@ For **Sales Person**: Name, Marital Status, Gender, Hire Date
 The scripts to create the tables, keys and indexes are included in the repo. We obtain this schema:
 
 ![Our target star schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/StarSchema.png)
+
+
+## 1.3 SSIS ETL Package to fill our data warehouse
+
+**SSIS (SQL Server Integration Services):**
+SQL Server Integration Services (SSIS) is a powerful data integration and workflow automation tool from Microsoft, installed as a seperate package but used within **Visual Studio** GUI. It allows you to **ETL** data between various sources and destinations. SSIS supports relational databases, flat files, and cloud-based storage. It is commonly used for tasks like data migration, **data warehousing**, and automating business processes. SSIS provides a visual design environment with drag-and-drop functionality to build complex data workflows and transformation logic.
+
+**ETL (Extract, Transform, Load):**
+ETL stands for Extract, Transform, Load, which is a process used in **data warehousing** to move data from source systems to a destination, typically a data warehouse or data lake. The process involves:
+- Extract: Gathering data from various sources such as databases, APIs, or flat files.
+- Transform: Cleaning, filtering, and transforming the data into the desired format. This may involve data validation, aggregation, and applying business rules.
+- Load: Inserting the transformed data into the destination storage system, such as a relational database, data warehouse, or analytics platform.
+
