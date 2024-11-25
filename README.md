@@ -1,5 +1,8 @@
 # Data-Pipeline-Project
 I'll try to create a data pipeline for the imaginary company: AdventureWorks.
+![BigDataInfrastructure](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/BigDataInfrastructure.png)
+
+![ETLPipeline](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/ETLPipeline.png)
 
 **Tools Used**
 - MS SQL Server 2022
