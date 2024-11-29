@@ -116,11 +116,18 @@ The scripts to create the tables, keys and indexes are included in the repo. We 
 
 ![Our target star schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/StarSchema.png)
 
+## 1.3 Creating and Populating a Staging Table
+While it is not best practice to use a global staging table because it can get slower with big databases and it doesn't scale very well, we'll be using it for its simplicity and practicality for this case. Here is the table
+![Staging Table Scheam](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/StarSchema.png)
+
 
 ## 1.3 SSIS ETL Package to fill our data warehouse
 
 **SSIS (SQL Server Integration Services):**
 SQL Server Integration Services (SSIS) is a powerful data integration and workflow automation tool from Microsoft, installed as a seperate package but used within **Visual Studio** GUI. It allows you to **ETL** data between various sources and destinations. SSIS supports relational databases, flat files, and cloud-based storage. It is commonly used for tasks like data migration, **data warehousing**, and automating business processes. SSIS provides a visual design environment with drag-and-drop functionality to build complex data workflows and transformation logic.
+
+
+
 
 **ETL (Extract, Transform, Load):**
 ETL stands for Extract, Transform, Load, which is a process used in **data warehousing** to move data from source systems to a destination, typically a data warehouse or data lake. The process involves:
