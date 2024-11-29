@@ -1,5 +1,6 @@
 # Data-Pipeline-Project
-I'll try to create a data pipeline for the imaginary company: AdventureWorks.
+As a Data Science student, I wanted to explore the data engineering processes that are crucial for delivering data to various teams within a company, such as the Data Science team, Business Intelligence team, and others. This repository focuses on transforming a part of a 3NF normalized database into a data warehouse with a star schema.
+For this project, I used the AdventureWorks2022 database, concentrating on specific sections of the database rather than the entire dataset.
 ![BigDataInfrastructure](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/BigDataInfrastructure.png)
 
 ![ETLPipeline](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/ETLPipeline1.png)
@@ -10,20 +11,10 @@ I'll try to create a data pipeline for the imaginary company: AdventureWorks.
 - MS Visual Studio Community 2019 (with Data Tools extension installed)
 - MS SQL Server Integration Services (SSIS)
 
-**Full Pipeline Example:**
-1. Extract data from multiple sources (CSV, APIs, web scraping, etc.).
-2. Transform the data by cleaning, aggregating, and combining it.
-3. Load the data into a SQL database or a data warehouse.
-4. Visualize the data in Power BI (create reports and dashboards).
-5. Train a predictive model (e.g., regression or classification) on the data using Python.
-6. Automate the pipeline (e.g., using cron jobs, Airflow, or Python scripts).
-7. Deploy the model and use Power BI to update dashboards with new predictions.
 
+# Adventure Works from normalized schema to star schema (Data Warehouse).
 
-
-# 1. Adventure Works from normalized schema to star schema (Data Warehouse).
-
-## 1.1 Defining the schema
+## 1. Defining the Schema
 
 **a. Identify the Business Purpose**
 - The scope of the data we want to represent: Sales
@@ -111,12 +102,12 @@ For **Sales Person**: Name, Marital Status, Gender, Hire Date
 
 
 
-## 1.2 Building the star database
+## 2 Building the star database
 The scripts to create the tables, keys and indexes are included in the repo. We obtain this schema:
 
 ![Our target star schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/StarSchema.png)
 
-## 1.3 Creating and Populating a Staging Table
+## 3 Creating and Populating a Staging Table
 While using a global staging table is not typically considered best practice due to performance concerns (especially with large databases) and limited scalability, we will use it in this case for its simplicity and practicality. Below is the schema for the staging table:
 ![Staging Table Schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/StagingTable.png)
 
@@ -134,7 +125,7 @@ While using a global staging table is not typically considered best practice due
     - This allows us to link the surrogate keys from the dimension tables to the fact table, populating the fact table with the appropriate foreign keys and quantitative data.
   
 
-## 1.4 SSIS ETL Package to fill our data warehouse
+## 4 SSIS ETL Package to fill our data warehouse
 
 **SSIS (SQL Server Integration Services):**
 SQL Server Integration Services (SSIS) is a powerful data integration and workflow automation tool from Microsoft, installed as a seperate package but used within **Visual Studio** GUI. It allows you to **ETL** data between various sources and destinations. SSIS supports relational databases, flat files, and cloud-based storage. It is commonly used for tasks like data migration, **data warehousing**, and automating business processes. SSIS provides a visual design environment with drag-and-drop functionality to build complex data workflows and transformation logic.
@@ -146,7 +137,7 @@ ETL stands for Extract, Transform, Load, which is a process used in **data wareh
 - Load: Inserting the transformed data into the destination storage system, such as a relational database, data warehouse, or analytics platform.
 
 
-### 1.4.1 SSIS Package Overview
+### 4.1 SSIS Package Overview
 In our SSIS package, we will use the following components:
 - **"Execute SQL"** Task: This will be used to truncate all the data warehouse tables before loading new data, ensuring that we avoid any primary key conflicts.
 - **"Data Flow"** Task: This task will first populate the dimension tables and then the fact tables, ensuring that all necessary data is loaded in the correct sequence.
@@ -154,7 +145,7 @@ The arrows in the SSIS control flow enforce the execution sequence, ensuring tha
 ![SSIS Package Overview](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/PackageOverview.png)
 
 
-### 1.4.2 Truncating the data warehouse tables
+### 4.2 Truncating the data warehouse tables
 **TRUNCATE** removes all rows from a table, resetting the table to its empty state without logging individual row deletions, unlike **DELETE**.
 ```sql
 TRUNCATE TABLE FactSales
@@ -168,7 +159,7 @@ ADD CONSTRAINT FK_FactSales_SalesPerson FOREIGN KEY (SalesPersonKey) REFERENCES 
 We remove the constraints because it is not possible to truncate a table that is referenced by a foreign key in another table (e.g., the FactSales table).
 
 
-### 1.4.3 Populating Dimension Tables
+### 4.3 Populating Dimension Tables
 This is the 1st data flow, we'll be taking as an example the dimension table **DimSalesPerson**
 ![Populating Dim Tables in SSIS](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/1stDataFlow.png)
 Here is how to create the staging table for this dimension table:
@@ -187,7 +178,7 @@ After running this query, you’ll just map the columns. Here, they are preset t
 ![Populating Dim Tables in SSIS](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/MappingDimSalesPerson.png)
 
 
-### 1.4.4 Populating Fact Table
+### 4.4 Populating Fact Table
 Now that all the dimension tables are populated, we’ll use the global staging table and perform joins on the filled dimension tables to create the staging table for the Fact table.
 ![Populating Fact Table in SSIS](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/2ndDataFlow.png)
 ```sql
@@ -213,6 +204,56 @@ This step takes noticeably more time because of the multiple joins.
 ![Populating Fact Table in SSIS](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/MappingFactSales.png)
 
 
-## 1.5 Performance Testing on the newly created Data Warehouse (More like Data Mart)
+## 5 Performance Testing on the newly created Data Warehouse (More like Data Mart)
+Let's say that we want to analyze the performance of every male salesperson in the two years, 2012 and 2013. We can use these queries and measure their execution times:
+```sql
+USE AdventureWorks2022;
+-- Measure execution time for the normalized database
+SET STATISTICS TIME ON;
+SELECT
+    (per.FirstName + ' ' + per.LastName) AS SalesPersonName,
+	SUM(sod.LineTotal) AS Total
+
+FROM Sales.SalesOrderHeader so
+JOIN Sales.SalesOrderDetail sod ON so.SalesOrderID = sod.SalesOrderID
+JOIN HumanResources.Employee he ON so.SalesPersonID = he.BusinessEntityID
+JOIN Person.Person per ON so.SalesPersonID = per.BusinessEntityID
+WHERE so.OrderDate BETWEEN '2012-01-01 00:00:00' AND '2014-01-01 00:00:00'
+AND he.Gender = 'M'
+GROUP BY  per.FirstName, per.LastName;
+SET STATISTICS TIME OFF;
 
 
+USE AdventureWorksCustomDW;
+-- Measure execution time for data warehouse query
+SET STATISTICS TIME ON;
+SELECT
+	dsp.SalesPersonName,
+    SUM(f.SubTotal) AS Total
+FROM FactSales f
+JOIN DimSalesPerson dsp ON f.SalesPersonKey = dsp.SalesPersonKey
+JOIN DimDate dt ON f.DateKey = dt.DateKey
+WHERE dt.[Date] BETWEEN '2012-01-01 00:00:00' AND '2014-01-01 00:00:00'
+AND dsp.SalesPersonGender = 'M'
+GROUP BY dsp.SalesPersonName;
+SET STATISTICS TIME OFF;
+```
+
+We find this difference:
+![Execution Time Difference](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/ExecutionTime.png)
+
+It takes half the time to run the query, involving almost 80,000 rows, on the data warehouse (FactSales and DimSalesPerson tables) as compared to the normalized database (SalesOrderHeader and related tables).
+
+In real-world scenarios, data sizes can grow exponentially to reach tens or hundreds of millions of rows. the difference in execution times becomes even more significant. The data warehouse model is optimized for reporting and analytical queries (OLAP), which makes it more efficient than the normalized model in such cases. Therefore, the time savings would scale accordingly, leading to a substantial improvement in performance, particularly for complex and frequent queries over large datasets.
+
+This improved performance not only reduces the time needed for business intelligence tasks but also provides better user experience and faster decision-making capabilities in data-driven environments.
+
+
+
+# Further Explorations
+- **Expand Schema Design:** Explore snowflake schemas and advanced relationships like bridge tables.
+- **Visualize Insights:** Create dashboards with Power BI, Tableau, or Python to analyze and present data.
+- **Automate ETL Pipelines:** Use tools like Apache Airflow or dbt for automation and scalability.
+- **Optimize Performance:** Experiment with indexing, partitioning, and other performance-tuning strategies.
+- **Data Science on Data Lake:** Build a data lake to perform preprocessing, exploratory analysis, and other data science tasks on raw and semi-structured data.
+- **Data Science on Data Warehouse:** Use the data warehouse to streamline data for feature engineering and training predictive models.
