@@ -117,17 +117,27 @@ The scripts to create the tables, keys and indexes are included in the repo. We 
 ![Our target star schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/StarSchema.png)
 
 ## 1.3 Creating and Populating a Staging Table
-While it is not best practice to use a global staging table because it can get slower with big databases and it doesn't scale very well, we'll be using it for its simplicity and practicality for this case. Here is the table
-![Staging Table Scheam](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/StarSchema.png)
+While using a global staging table is not typically considered best practice due to performance concerns (especially with large databases) and limited scalability, we will use it in this case for its simplicity and practicality. Below is the schema for the staging table:
+![Staging Table Schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/StagingTable.png)
 
+**Our strategy**, to be fully implemented in Microsoft SSIS using Visual Studio, will follow these steps:
+1. Create Temporary Staging Dimension Tables:
+    - Create temporary staging tables for each dimension (e.g., DimDate) as OLE DB sources.
+    - Populate these tables with relevant qualitative entries (e.g., dates for the DimDate table).
+    - Generate auto-incrementing surrogate keys (e.g., DateKey) during the population process.
 
-## 1.3 SSIS ETL Package to fill our data warehouse
+2. Load Data into Dimension Tables:
+    - Transfer the selected entries from the temporary staging tables into the corresponding dimension tables, ensuring that all dimension tables are fully populated.
+
+3. Populate Fact Table:
+    - Use LEFT JOIN operations between the global staging table and each of the dimension tables.
+    - This allows us to link the surrogate keys from the dimension tables to the fact table, populating the fact table with the appropriate foreign keys and quantitative data.
+  
+
+## 1.4 SSIS ETL Package to fill our data warehouse
 
 **SSIS (SQL Server Integration Services):**
 SQL Server Integration Services (SSIS) is a powerful data integration and workflow automation tool from Microsoft, installed as a seperate package but used within **Visual Studio** GUI. It allows you to **ETL** data between various sources and destinations. SSIS supports relational databases, flat files, and cloud-based storage. It is commonly used for tasks like data migration, **data warehousing**, and automating business processes. SSIS provides a visual design environment with drag-and-drop functionality to build complex data workflows and transformation logic.
-
-
-
 
 **ETL (Extract, Transform, Load):**
 ETL stands for Extract, Transform, Load, which is a process used in **data warehousing** to move data from source systems to a destination, typically a data warehouse or data lake. The process involves:
@@ -135,3 +145,11 @@ ETL stands for Extract, Transform, Load, which is a process used in **data wareh
 - Transform: Cleaning, filtering, and transforming the data into the desired format. This may involve data validation, aggregation, and applying business rules.
 - Load: Inserting the transformed data into the destination storage system, such as a relational database, data warehouse, or analytics platform.
 
+
+### 1.4.1 SSIS Package Overview
+
+
+
+### 1.4.2 Populating Dimension Tables
+
+### 1.4.3 Populating Fact Table
