@@ -1,8 +1,8 @@
 # Data-Pipeline-Project
 I'll try to create a data pipeline for the imaginary company: AdventureWorks.
-![BigDataInfrastructure](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/BigDataInfrastructure.png)
+![BigDataInfrastructure](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/BigDataInfrastructure.png)
 
-![ETLPipeline](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/ETLPipeline1.png)
+![ETLPipeline](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/ETLPipeline1.png)
 
 **Tools Used**
 - MS SQL Server 2022
@@ -21,7 +21,7 @@ I'll try to create a data pipeline for the imaginary company: AdventureWorks.
 
 
 
-# 1. Adventure Works from normalized schema to star schema.
+# 1. Adventure Works from normalized schema to star schema (Data Warehouse).
 
 ## 1.1 Defining the schema
 
@@ -107,18 +107,18 @@ For **Sales Person**: Name, Marital Status, Gender, Hire Date
 ​
 
 **Schema of the normalized tables we will be using**
-![Schema of the normalized tables we will be using](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/AW%20Original%20Normalized%20Schema.png)
+![Schema of the normalized tables we will be using](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/AW%20Original%20Normalized%20Schema.png)
 
 
 
 ## 1.2 Building the star database
 The scripts to create the tables, keys and indexes are included in the repo. We obtain this schema:
 
-![Our target star schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/StarSchema.png)
+![Our target star schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/StarSchema.png)
 
 ## 1.3 Creating and Populating a Staging Table
 While using a global staging table is not typically considered best practice due to performance concerns (especially with large databases) and limited scalability, we will use it in this case for its simplicity and practicality. Below is the schema for the staging table:
-![Staging Table Schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/StagingTable.png)
+![Staging Table Schema](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/StagingTable.png)
 
 **Our strategy**, to be fully implemented in Microsoft SSIS using Visual Studio, will follow these steps:
 1. Create Temporary Staging Dimension Tables:
@@ -147,9 +147,72 @@ ETL stands for Extract, Transform, Load, which is a process used in **data wareh
 
 
 ### 1.4.1 SSIS Package Overview
+In our SSIS package, we will use the following components:
+- **"Execute SQL"** Task: This will be used to truncate all the data warehouse tables before loading new data, ensuring that we avoid any primary key conflicts.
+- **"Data Flow"** Task: This task will first populate the dimension tables and then the fact tables, ensuring that all necessary data is loaded in the correct sequence.
+The arrows in the SSIS control flow enforce the execution sequence, ensuring that the tasks are executed in the specified order.
+![SSIS Package Overview](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/PackageOverview.png)
 
 
+### 1.4.2 Truncating the data warehouse tables
+**TRUNCATE** removes all rows from a table, resetting the table to its empty state without logging individual row deletions, unlike **DELETE**.
+```sql
+TRUNCATE TABLE FactSales
 
-### 1.4.2 Populating Dimension Tables
+ALTER TABLE FactSales DROP CONSTRAINT FK_FactSales_SalesPerson
+TRUNCATE TABLE DimSalesPerson
 
-### 1.4.3 Populating Fact Table
+ALTER TABLE FactSales
+ADD CONSTRAINT FK_FactSales_SalesPerson FOREIGN KEY (SalesPersonKey) REFERENCES DimSalesPerson (SalesPersonKey);
+```
+We remove the constraints because it is not possible to truncate a table that is referenced by a foreign key in another table (e.g., the FactSales table).
+
+
+### 1.4.3 Populating Dimension Tables
+This is the 1st data flow, we'll be taking as an example the dimension table **DimSalesPerson**
+![Populating Dim Tables in SSIS](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/1stDataFlow.png)
+Here is how to create the staging table for this dimension table:
+```sql
+WITH SalesPersonCTE AS (
+    SELECT DISTINCT SalesPersonName, SalesPersonGender, SalesPersonMaritalStatus, SalesPersonHireDate
+    FROM StagingTable
+)
+
+SELECT
+    ROW_NUMBER() OVER (ORDER BY SalesPersonName) AS SalesPersonKey,
+    SalesPersonName, SalesPersonGender, SalesPersonMaritalStatus, SalesPersonHireDate
+FROM SalesPersonCTE;
+```
+After running this query, you’ll just map the columns. Here, they are preset to have the corresponding names.
+![Populating Dim Tables in SSIS](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/MappingDimSalesPerson.png)
+
+
+### 1.4.4 Populating Fact Table
+Now that all the dimension tables are populated, we’ll use the global staging table and perform joins on the filled dimension tables to create the staging table for the Fact table.
+![Populating Fact Table in SSIS](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/2ndDataFlow.png)
+```sql
+SELECT st.SalesOrderID,
+	dc.CityKey,
+	dt.DateKey,
+	dp.ProductKey,
+	dso.SpecialOfferKey,
+	dsp.SalesPersonKey,
+	st.OrderQty,
+	st.SubTotal
+
+FROM StagingTable st
+LEFT JOIN DimCity dc ON st.CityName = dc.CityName
+LEFT JOIN DimDate dt ON st.[Date] = dt.[Date]
+LEFT JOIN DimProduct dp ON st.ProductName = dp.ProductName
+LEFT JOIN DimSpecialOffer dso ON st.SpecialOfferType = dso.SpecialOfferType
+LEFT JOIN DimSalesPerson dsp ON st.SalesPersonName = dsp.SalesPersonName
+
+ORDER BY st.SalesOrderID
+```
+This step takes noticeably more time because of the multiple joins.
+![Populating Fact Table in SSIS](https://github.com/AnasRouam/Data-Pipeline-Project/blob/main/DocsAssets/MappingFactSales.png)
+
+
+## 1.5 Performance Testing on the newly created Data Warehouse (More like Data Mart)
+
+
